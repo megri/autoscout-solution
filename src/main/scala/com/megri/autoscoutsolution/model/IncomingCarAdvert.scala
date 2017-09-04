@@ -10,8 +10,8 @@ case class IncomingCarAdvert(
   title: String,
   fuel: FuelType,
   price: Int,
-  mileage: Option[Int],
-  firstRegistration: Option[LocalDate]
+  mileage: Option[Int] = None,
+  firstRegistration: Option[LocalDate] = None
 ) {
   def withId(id: Long): CarAdvert =
     CarAdvert(id, title, fuel, price, mileage, firstRegistration)

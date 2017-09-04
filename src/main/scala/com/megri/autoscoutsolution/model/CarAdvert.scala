@@ -11,8 +11,8 @@ case class CarAdvert(
   title: String,
   fuel: FuelType,
   price: Int,
-  mileage: Option[Int],
-  firstRegistration: Option[LocalDate]
+  mileage: Option[Int] = None,
+  firstRegistration: Option[LocalDate] = None
 )
 
 object CarAdvert {

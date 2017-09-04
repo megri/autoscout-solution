@@ -5,31 +5,40 @@ import java.util.concurrent.atomic._
 import com.megri.autoscoutsolution.model._
 
 class InMemoryStorage {
-  private val data = new AtomicReference(Map.empty[Long, CarAdvert])
-  private val sequence = new AtomicLong()
+  private[this] case class State(sequence: Long, data: Map[Long, CarAdvert])
+  private[this] val state = new AtomicReference(State(0, Map.empty))
 
   def create(incomingCarAdvert: IncomingCarAdvert): CarAdvert = {
-    val id = sequence.getAndIncrement()
-    update(id, incomingCarAdvert)
-    readUnsafe(id)
+    val newState = state.updateAndGet{state =>
+      val id = state.sequence
+      val nextId = id + 1
+      val record = id -> incomingCarAdvert.withId(id)
+      State(nextId, state.data + record)
+    }
+
+    newState.data(newState.sequence - 1)
   }
 
-  def read(id: Long): Option[CarAdvert] =
-    data.get.get(id)
-
-  def readUnsafe(id: Long): CarAdvert =
-    data.get.getOrElse(id, throw new Exception(s"Id $id does not exist in storage"))
+  def read(id: Long): Option[CarAdvert] = {
+    state.get.data.get(id)
+  }
 
   def readAll: Seq[CarAdvert] =
-    data.get.values.to[Seq]
+    state.get.data.values.to[Seq]
 
   def update(id: Long, incomingCarAdvert: IncomingCarAdvert): CarAdvert = {
-    sequence.updateAndGet(nextId => if (nextId < id) id + 1 else nextId)
-    data.updateAndGet(map => map + (id -> incomingCarAdvert.withId(id)))
-    readUnsafe(id)
+    state.updateAndGet{state =>
+      val nextId = if (id < state.sequence) state.sequence else id + 1
+      val record = id -> incomingCarAdvert.withId(id)
+      State(nextId, state.data + record)
+    }.data(id)
   }
 
-  def delete(id: Long): Unit = {
-    data.getAndUpdate(map => map - id)
+  def delete(id: Long): Option[CarAdvert] = {
+    state.getAndUpdate{state =>
+      State(state.sequence, state.data - id)
+    }.data.get(id)
   }
 }
+
+
