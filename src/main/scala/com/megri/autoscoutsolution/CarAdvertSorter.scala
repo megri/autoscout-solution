@@ -28,6 +28,7 @@ object CarAdvertSorter {
     CarAdvertSorter("title", _.title),
     CarAdvertSorter("fuel", _.fuel),
     CarAdvertSorter("price", _.price),
+    CarAdvertSorter("new", _.isNew),
     CarAdvertSorter("mileage", _.mileage),
     CarAdvertSorter("firstRegistration", _.firstRegistration)
   )
