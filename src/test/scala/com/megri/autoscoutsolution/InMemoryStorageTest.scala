@@ -38,7 +38,7 @@ class InMemoryStorageTest extends WordSpec with MustMatchers {
         val storage = new InMemoryStorage
 
         storage.update(42, IncomingCarAdvert("A", FuelType.Gasoline, 1000))
-  
+
         storage.readAll mustBe Seq(
           CarAdvert(42, "A", FuelType.Gasoline, 1000)
         )

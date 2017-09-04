@@ -13,9 +13,14 @@ class Service(storage: InMemoryStorage) {
   implicit def entityDecoder[A: Decoder]: EntityDecoder[A] = jsonOf
   implicit def entityEncoder[A: Encoder]: EntityEncoder[A] = jsonEncoderOf
 
+  object CarAdvertSortParam extends OptionalQueryParamDecoderMatcher[CarAdvertSorter]("sortBy")
+  object DescSortParam extends OptionalQueryParamDecoderMatcher[Boolean]("desc")
+
   val routes = HttpService {
-    case GET -> Root =>
-      Ok(storage.readAll)
+    case GET -> Root :? CarAdvertSortParam(maybeSorter) +& DescSortParam(sortDesc) =>
+      val data = storage.readAll
+      val sorter = maybeSorter.getOrElse(CarAdvertSorter.defaultSorter)
+      Ok(sorter.sort(data, descending = sortDesc.getOrElse(false)))
 
     case GET -> Root / LongVar(id) =>
       storage.read(id) match {
@@ -38,5 +43,4 @@ class Service(storage: InMemoryStorage) {
       .attemptAs[A]
       .fold(decodeFailure => decodeFailure.toHttpResponse(request.httpVersion), onSuccess)
       .flatten
-
 }
