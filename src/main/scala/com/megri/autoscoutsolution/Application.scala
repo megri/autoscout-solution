@@ -2,6 +2,7 @@ package com.megri.autoscoutsolution
 
 import fs2._
 import org.http4s.server.blaze.BlazeBuilder
+import org.http4s.server.middleware.CORS
 import org.http4s.util.StreamApp
 
 object Application extends StreamApp {
@@ -12,7 +13,7 @@ object Application extends StreamApp {
 
     BlazeBuilder
       .bindHttp(8080, "localhost")
-      .mountService(service.routes)
+      .mountService(CORS(service.routes))
       .serve
   }
 }
